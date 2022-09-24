@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lq.autogenerationscript.mapper.sqlScript.SqlScriptMapper">
+
+
+    <select id="GetProcContent" resultType="java.lang.String">
+        SELECT definition
+        FROM sys.sql_modules
+        WHERE object_id = #{procName}
+    </select>
+
+
+    <select id="GetProcList" resultType="hashmap">
+        <bind name="prefix" value="_parameter + '%'"/>
+        SELECT object_id,name FROM sys.objects WHERE type = 'P' AND name LIKE #{prefix}
+    </select>
+
+
+    <select id="GetTableList" resultType="java.util.Map">
+        <bind name="prefix" value="_parameter + '%'"/>
+        SELECT object_id,name FROM sys.objects WHERE type = 'U' AND name LIKE #{prefix}
+    </select>
+
+
+    <select id="getTableStructure" resultType="com.lq.autogenerationscript.entity.TableStructure">
+        SELECT b.name,
+               c.definition,
+               a.name                       AS column_name,
+               a.max_length,
+               a.precision,
+               a.scale,
+               a.is_nullable,
+               a.is_identity,
+               ISNULL(d.seed_value, 0)      AS seed_value,
+               ISNULL(d.increment_value, 0) AS increment_value
+        FROM sys.columns a
+                 LEFT JOIN sys.types b
+                           ON a.user_type_id = b.user_type_id
+                 LEFT JOIN sys.default_constraints c
+                           ON a.default_object_id = c.object_id
+                 LEFT JOIN sys.identity_columns d
+                           ON a.object_id = d.object_id AND a.column_id = d.column_id
+        WHERE a.OBJECT_ID = #{objectId}
+    </select>
+
+
+    <select id="getPrimaryKey" resultType="com.lq.autogenerationscript.entity.KeyColumnUsage">
+        SELECT *
+        FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+        where TABLE_NAME = #{tableName}
+        ORDER BY ORDINAL_POSITION ASC
+    </select>
+
+
+    <select id="getFillFactor" resultType="java.lang.Integer">
+        SELECT fill_factor
+        FROM sys.indexes
+        WHERE object_id = #{objectId}
+          AND is_primary_key = 1
+    </select>
+
+    <select id="getTableIndexes" resultType="com.lq.autogenerationscript.entity.SysIndexes">
+        SELECT a.object_id,
+               a.name,
+               a.index_id,
+               a.type,
+               a.type_desc,
+               a.is_unique,
+               a.is_primary_key,
+               b.is_descending_key,
+               c.name as column_name
+        FROM sys.indexes a
+                 left join
+             sys.index_columns b
+             on a.object_id = b.object_id AND a.index_id = b.index_id
+                 LEFT JOIN
+             sys.columns c on b.object_id = c.object_id AND b.column_id = c.column_id
+        WHERE a.object_id = #{objectId}
+          AND a.is_disabled = 0
+          AND a.type IN (1, 2)
+        ORDER BY a.index_id
+    </select>
+</mapper>
