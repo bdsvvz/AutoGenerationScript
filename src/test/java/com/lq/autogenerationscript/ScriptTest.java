@@ -31,7 +31,7 @@ public class ScriptTest {
     @Test
     public void test() {
 //        generaterTableUtils.getTableStructure(0,"mhis_biz_infusion");
-        generaterTableUtils.start();
+        generaterTableUtils.start(null);
 
     }
 }

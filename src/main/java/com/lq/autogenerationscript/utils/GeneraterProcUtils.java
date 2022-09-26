@@ -84,11 +84,11 @@ public class GeneraterProcUtils {
         }
     }
 
-    public void GeneraterProc() {
+    public void GeneraterProc(String targetPath) {
         String procPrefix = "pm_";
         List<Map<String, Object>> prcoList = sqlScriptMapper.GetProcList(procPrefix);
         //目标文件路径
-        String targetPath = "F:\\Android\\src\\mhis6server\\target\\script.sql";
+        targetPath = targetPath + System.currentTimeMillis() + ".sql";
         //新建文件
         File f = new File(targetPath);
         BufferedWriter bw = null;

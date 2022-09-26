@@ -42,14 +42,15 @@ public class GeneraterTableUtils {
     }
 
 
-    public void start() {
-        String tablePrefix = "";
+    public void start(String targetPath) {
+        String tablePrefix = "mhis_";
         //获取相关前缀开头的表集合
         List<Map<String, Object>> tableList = sqlScriptMapper.GetTableList(tablePrefix);
         //目标文件路径
-        String targetPath = "E:\\java-project\\AutoGenerationScript\\target\\tableScript.sql";
+        targetPath = targetPath + System.currentTimeMillis() + ".sql";
         //新建文件
         File f = new File(targetPath);
+
         BufferedWriter bw;
         try {
             bw = new BufferedWriter(new FileWriter(f));
@@ -122,7 +123,7 @@ public class GeneraterTableUtils {
         //获取索引
         List<SysIndexes> sysIndexesList = sqlScriptMapper.getTableIndexes(objectId);
         sysIndexesList.forEach(item -> {
-            stringBuffer.append("if not exists(select * from sysindexes where id=object_id('" + tableName + "') and name='" + item.getName() + "')\r\n");
+            stringBuffer.append("if not exists(select * from sysindexes where id=object_id('" + tableName + "') and name='" + item.getName() + "') and not exists(SELECT * FROM   INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE  TABLE_NAME = '" + tableName + "' AND COLUMN_NAME = '" + item.getColumn_name() + "')\r\n");
             stringBuffer.append("create " + item.getType_desc() + " index [" + item.getName() + "] on [" + tableName + "](" + item.getColumn_name() + " " + (item.getIs_descending_key() == 1 ? "DESC" : "ASC") + ")\r\n");
         });
         stringBuffer.append("\r\n");
