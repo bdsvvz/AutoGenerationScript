@@ -58,7 +58,8 @@ public class GeneraterProcUtils {
         System.out.println(stringBuffer);
     }
 
-    public void start(Integer objectId, String procName, File f, BufferedWriter bw) {
+    public void start(Integer objectId, String procName, String path) {
+
         //String procName = "pm_comm_get_message";
         //读取存储过程
         String procContent = sqlScriptMapper.GetProcContent(objectId);
@@ -77,10 +78,17 @@ public class GeneraterProcUtils {
         stringBuffer.append(procContent);
         stringBuffer.append("\r\n");
         stringBuffer.append("GO\r\n");
+        path = path + procName + ".sql";
+        //新建文件
+        File f = new File(path);
+        BufferedWriter bw = null;
         try {
+            bw = new BufferedWriter(new FileWriter(f));
             bw.write(stringBuffer.toString());
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+            bw.flush();
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -88,25 +96,11 @@ public class GeneraterProcUtils {
         String procPrefix = "pm_";
         List<Map<String, Object>> prcoList = sqlScriptMapper.GetProcList(procPrefix);
         //目标文件路径
-        targetPath = targetPath + System.currentTimeMillis() + ".sql";
-        //新建文件
-        File f = new File(targetPath);
-        BufferedWriter bw = null;
-        try {
-            bw = new BufferedWriter(new FileWriter(f));
-            BufferedWriter finalBw = bw;
-            prcoList.forEach((item) -> {
-                if (item.get("name").toString().indexOf(".") < 0 && item.get("name").toString().indexOf("_bak") < 0) {
-                    start(Integer.valueOf(item.get("object_id").toString()), item.get("name").toString(), f, finalBw);
-                    //System.out.println(item.get("name").toString());
-                }
-
-            });
-            bw.flush();
-            bw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        prcoList.forEach((item) -> {
+            if (item.get("name").toString().indexOf(".") < 0 && item.get("name").toString().indexOf("_bak") < 0) {
+                start(Integer.valueOf(item.get("object_id").toString()), item.get("name").toString(), targetPath);
+                //System.out.println(item.get("name").toString());
+            }
+        });
     }
 }
