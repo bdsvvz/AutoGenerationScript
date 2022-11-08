@@ -14,7 +14,7 @@ import java.io.File;
  * @Date: 2022-09-26 16:37
  * @Version 1.0
  */
-@Component
+//@Component
 public class ApplicationRunnerTest implements ApplicationRunner {
     @Resource
     GeneraterProcUtils generaterProcUtils;
@@ -54,7 +54,7 @@ public class ApplicationRunnerTest implements ApplicationRunner {
             }
         }
         //建存储过程
-        generaterProcUtils.GeneraterProc(procFilePath);
+        generaterProcUtils.generateProc(procFilePath);
     }
 }
 

@@ -1,6 +1,7 @@
 package com.lq.autogenerationscript;
 
 
+import com.lq.autogenerationscript.utils.GeneraterCProcUtils;
 import com.lq.autogenerationscript.utils.GeneraterProcUtils;
 import com.lq.autogenerationscript.utils.GeneraterTableUtils;
 import org.junit.Test;
@@ -13,6 +14,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * @Author: liQing
@@ -26,12 +28,19 @@ public class ScriptTest {
     GeneraterProcUtils generaterProcUtils;
 
     @Resource
+    GeneraterCProcUtils generaterCProcUtils;
+
+    @Resource
     GeneraterTableUtils generaterTableUtils;
 
     @Test
     public void test() {
 //        generaterTableUtils.getTableStructure(0,"mhis_biz_infusion");
-        generaterTableUtils.start(null);
-
+//        generaterTableUtils.start(null);
+//        generaterProcUtils.generateProc("E:\\java-project\\AutoGenerationScript\\target\\script\\proc\\");
+//        GeneraterCProcUtils generaterCProcUtils = new GeneraterCProcUtils();
+        //generaterCProcUtils.generateOracleProc("PROC_OP_CHANGE_AV_STORE_DRUG", "E:\\java-project\\AutoGenerationScript\\target\\script\\CTemplate\\");
+        //生成建表语句
+        generaterTableUtils.start("E:\\java-project\\AutoGenerationScript\\target\\script\\table\\");
     }
 }

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lq.autogenerationscript.mapper.tableScript.TableScriptMapper">
+
+
+    <!--    获取表数量-->
+    <select id="getTablesCount" parameterType="String" resultType="java.lang.Integer">
+        SELECT count(1)
+        FROM sys.objects
+        WHERE type = 'U'
+        <if test="prefix != null and prefix !=''">
+            <bind name="prefix" value="prefix + '%'"/>
+            and name like #{prefix}
+        </if>
+    </select>
+
+    <select id="getTableList" resultType="java.util.Map">
+        SELECT object_id,name FROM sys.objects WHERE type = 'U'
+        <if test="prefix != null and prefix != ''">
+            <bind name="prefix" value="prefix + '%'"/>
+            and name like #{prefix}
+        </if>
+        order by object_id OFFSET #{offset}
+        ROW FETCH NEXT #{size} rows only
+    </select>
+</mapper>
