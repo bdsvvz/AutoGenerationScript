@@ -3,23 +3,65 @@
 
 <mapper namespace="com.lq.autogenerationscript.mapper.sqlScript.SqlScriptMapper">
 
-
-    <select id="GetProcContent" resultType="java.lang.String">
+    <!--    获取sqlserver的存储过程内容-->
+    <select id="getMssqlProcContent" resultType="java.lang.String">
         SELECT definition
         FROM sys.sql_modules
-        WHERE object_id = #{procName}
+        WHERE object_id = #{objectId}
     </select>
 
 
-    <select id="GetProcList" resultType="hashmap">
+    <!--    获取oracle的存储过程内容-->
+    <select id="getOracleProcContent" resultType="java.lang.String">
+        SELECT xmlagg(xmlparse(content text || ' '  wellformed) order by line).getclobval()
+        FROM user_source
+        where type = 'PROCEDURE'
+          and name = upper(#{procName})
+    </select>
+
+    <!--    获取sqlserver 存储过程列表-->
+    <select id="getMssqlProcList" resultType="hashmap">
         <bind name="prefix" value="_parameter + '%'"/>
-        SELECT object_id,name FROM sys.objects WHERE type = 'P' AND name LIKE #{prefix}
+        SELECT object_id,name FROM sys.objects WHERE type = 'P'
     </select>
 
 
-    <select id="GetTableList" resultType="java.util.Map">
+    <!--    获取Oracle 存储过程列表-->
+    <select id="getOracleProcList" resultType="java.lang.String">
+        <bind name="prefix" value="procPrefix + '%'"/>
+        SELECT name
+        FROM user_source
+        where type = 'PROCEDURE'
+        and name like upper(#{prefix})
+        group by name
+    </select>
+
+
+    <select id="getTableList" resultType="java.util.Map">
         <bind name="prefix" value="_parameter + '%'"/>
-        SELECT object_id,name FROM sys.objects WHERE type = 'U' AND name LIKE #{prefix}
+        SELECT object_id,name FROM sys.objects WHERE type = 'U' and name like #{prefix}
+    </select>
+
+    <!--    获取oracle的表集合-->
+    <select id="getOracleTableList" resultType="java.lang.String">
+        <bind name="prefix" value="_parameter + '%'"/>
+        SELECT TABLE_NAME FROM USER_TABLES A WHERE A.TABLE_NAME like upper(#{prefix})
+    </select>
+
+
+    <!--    获取oracle 表结构-->
+    <select id="getOracleTableStructure" resultMap="ResultMapWithBLOBs">
+        select column_name,
+               data_type,
+               data_length,
+               data_precision,
+               data_scale,
+               case when nullable = 'N' then 0 else 1 end as nullable,
+               character_set_name,
+               data_default
+        from user_tab_columns
+        where table_name = upper(#{tableName})
+        order by column_id
     </select>
 
 
@@ -78,7 +120,49 @@
              sys.columns c on b.object_id = c.object_id AND b.column_id = c.column_id
         WHERE a.object_id = #{objectId}
           AND a.is_disabled = 0
-          AND a.type IN (1, 2)
+          AND a.type = 2
         ORDER BY a.index_id
     </select>
+
+
+    <!--    获取oracle建表语句-->
+    <select id="getOracleTableScript" resultType="java.lang.String">
+        select dbms_metadata.get_ddl('TABLE', #{tableName})
+        from dual
+    </select>
+
+    <!--    获取oracle表的索引信息-->
+    <select id="getOracleTableIndexes" resultType="com.lq.autogenerationscript.entity.OracleSysIndexes">
+        select a.TABLE_OWNER, b.INDEX_NAME, b.TABLE_NAME, b.COLUMN_NAME, b.DESCEND
+        from user_indexes a
+                 join user_ind_columns b
+                      on a.INDEX_NAME = b.INDEX_NAME
+        where a.table_name = upper(#{tableName})
+          and a.UNIQUENESS = 'NONUNIQUE'
+          and a.index_type = 'NORMAL'
+    </select>
+
+
+    <select id="getOracleTablePrimary" resultType="com.lq.autogenerationscript.entity.OracleSysPrimary">
+        select cu.*
+        from user_cons_columns cu,
+             user_constraints au
+        where cu.constraint_name = au.constraint_name
+          and au.constraint_type = 'P'
+          and au.table_name = upper(#{tableName})
+    </select>
+
+
+    <resultMap id="ResultMapWithBLOBs" type="com.lq.autogenerationscript.entity.OracleTableStructure">
+        <result column="data_default" property="data_default" jdbcType="LONGVARBINARY"/>
+        <result column="column_name" property="column_name" jdbcType="VARCHAR"/>
+        <result column="data_type" property="data_type" jdbcType="VARCHAR"/>
+        <result column="data_length" property="data_length" jdbcType="INTEGER"/>
+        <result column="data_precision" property="data_precision" jdbcType="INTEGER"/>
+        <result column="data_scale" property="data_scale" jdbcType="INTEGER"/>
+        <result column="nullable" property="nullable" jdbcType="INTEGER"/>
+        <result column="character_set_name" property="character_set_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
 </mapper>
