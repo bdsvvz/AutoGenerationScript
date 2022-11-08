@@ -57,8 +57,8 @@
                data_precision,
                data_scale,
                case when nullable = 'N' then 0 else 1 end as nullable,
-               data_default,
-               character_set_name
+               character_set_name,
+               data_default
         from user_tab_columns
         where table_name = upper(#{tableName})
         order by column_id
@@ -125,10 +125,6 @@
     </select>
 
 
-    <select id="getOraclePrimaryKey" resultType="java.lang.String">
-
-    </select>
-
     <!--    获取oracle建表语句-->
     <select id="getOracleTableScript" resultType="java.lang.String">
         select dbms_metadata.get_ddl('TABLE', #{tableName})
@@ -143,6 +139,7 @@
                       on a.INDEX_NAME = b.INDEX_NAME
         where a.table_name = upper(#{tableName})
           and a.UNIQUENESS = 'NONUNIQUE'
+          and a.index_type = 'NORMAL'
     </select>
 
 
@@ -157,7 +154,14 @@
 
 
     <resultMap id="ResultMapWithBLOBs" type="com.lq.autogenerationscript.entity.OracleTableStructure">
-        <result column="DATA_DEFAULT" property="data_default" jdbcType="BLOB"/>
+        <result column="data_default" property="data_default" jdbcType="LONGVARBINARY"/>
+        <result column="column_name" property="column_name" jdbcType="VARCHAR"/>
+        <result column="data_type" property="data_type" jdbcType="VARCHAR"/>
+        <result column="data_length" property="data_length" jdbcType="INTEGER"/>
+        <result column="data_precision" property="data_precision" jdbcType="INTEGER"/>
+        <result column="data_scale" property="data_scale" jdbcType="INTEGER"/>
+        <result column="nullable" property="nullable" jdbcType="INTEGER"/>
+        <result column="character_set_name" property="character_set_name" jdbcType="VARCHAR"/>
     </resultMap>
 
 

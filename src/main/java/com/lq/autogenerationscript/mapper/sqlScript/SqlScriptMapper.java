@@ -40,8 +40,6 @@ public interface SqlScriptMapper {
 
     List<OracleTableStructure> getOracleTableStructure(String tableName);
 
-    String getOraclePrimaryKey(String tableName);
-
     String getOracleTableScript(String tableName);
 
     List<OracleSysIndexes> getOracleTableIndexes(String tableName);
