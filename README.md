@@ -1,2 +1,3 @@
-# AutoGenerationScript（目前仅支持sqlserver）
+# AutoGenerationScript
 # 自动生成数据库建表、建字段、建索引以及存储过程，并且可重复执行
+# 2022-11-08 增加对oracle 数据库的建表以及存储过程自动生成
