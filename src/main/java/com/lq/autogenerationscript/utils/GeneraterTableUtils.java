@@ -362,14 +362,14 @@ public class GeneraterTableUtils {
                 str += tableStructure.getData_type();
                 break;
             case "NUMBER":
-                str += tableStructure.getData_type() + (StringUtils.isEmpty(tableStructure.getData_precision()) ? "" : "(" + tableStructure.getData_precision() +
+                str += "0".equals(tableStructure.getData_precision()) ? "INTEGER" : tableStructure.getData_type() + (StringUtils.isEmpty(tableStructure.getData_precision()) ? "" : "(" + tableStructure.getData_precision() +
                         (StringUtils.isEmpty(tableStructure.getData_scale()) ? ")" : "," + tableStructure.getData_scale() + ")"));
                 break;
             default:
                 str = " ";
                 break;
         }
-        str += (tableStructure.getNullable() == 0 ? " NOT NULL " : " NULL ") + (StringUtils.isEmpty(tableStructure.getData_default()) ? "" : "DEFAULT " + tableStructure.getData_default());
+        str += (StringUtils.isEmpty(tableStructure.getData_default()) ? "" : "DEFAULT " + tableStructure.getData_default()) + (tableStructure.getNullable() == 0 ? " NOT NULL " : " NULL ");
         return str;
     }
 
