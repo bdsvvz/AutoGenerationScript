@@ -477,8 +477,6 @@ public class GeneraterTableUtils {
      */
     public String getOracleTableHandler(String str) {
         String[] strings = str.split("");
-        System.out.println(strings.length);
-
         int k = 0;
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < strings.length; i++) {

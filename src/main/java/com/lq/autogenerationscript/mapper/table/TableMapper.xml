@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lq.autogenerationscript.mapper.table.TableMapper">
+
+
+
+
+    <select id="getTableColumnInfo" resultType="java.util.Map">
+        SELECT CAST(SERVERPROPERTY(N'Servername') AS sysname) AS [Server_Name], DB_NAME() AS [Database_Name], SCHEMA_NAME(tbl.schema_id) AS [Table_Schema], tbl.name AS [Table_Name], clmns.column_id AS [ID], clmns.name AS [Name], clmns.is_ansi_padded AS [AnsiPaddingStatus], clmns.is_computed AS [Computed], ISNULL(cc.definition, N'') AS [ComputedText], ISNULL(baset.name, N'') AS [SystemType], s1clmns.name AS [DataTypeSchema], CAST(clmns.is_rowguidcol AS BIT) AS [RowGuidCol], CAST(CASE WHEN baset.name IN ( N'nchar', N'nvarchar' )
+            AND clmns.max_length
+            !=
+            -1 THEN clmns.max_length / 2
+            ELSE clmns.max_length
+            END AS INT) AS [Length], CAST(clmns.precision AS INT) AS [NumericPrecision], clmns.is_identity AS [Identity], CAST(ISNULL(ic.seed_value, 0) AS BIGINT) AS [IdentitySeed], CAST(ISNULL(ic.increment_value, 0) AS BIGINT) AS [IdentityIncrement], ISNULL(clmns.collation_name, N'') AS [Collation], CAST(clmns.scale AS INT) AS [NumericScale], clmns.is_nullable AS [Nullable], CAST(clmns.is_filestream AS BIT) AS [IsFileStream], ISNULL(ic.is_not_for_replication, 0) AS [NotForReplication], ( CASE WHEN clmns.default_object_id = 0 THEN N''
+            WHEN d.parent_object_id > 0 THEN N''
+            ELSE d.name
+            END ) AS [Default], ( CASE WHEN clmns.default_object_id = 0 THEN N''
+            WHEN d.parent_object_id > 0 THEN N''
+            ELSE SCHEMA_NAME(d.schema_id)
+            END ) AS [DefaultSchema], ( CASE WHEN clmns.rule_object_id = 0 THEN N''
+            ELSE r.name
+            END ) AS [Rule], ( CASE WHEN clmns.rule_object_id = 0 THEN N''
+            ELSE SCHEMA_NAME(r.schema_id)
+            END ) AS [RuleSchema], ISNULL(xscclmns.name, N'') AS [XmlSchemaNamespace], ISNULL(s2clmns.name, N'') AS [XmlSchemaNamespaceSchema], ISNULL(( CASE clmns.is_xml_document
+            WHEN 1 THEN 2
+            ELSE 1
+            END ), 0) AS [XmlDocumentConstraint], CAST(ISNULL(cc.is_persisted, 0) AS BIT) AS [IsPersisted], CAST(ISNULL(( SELECT TOP 1
+            1
+            FROM sys.foreign_key_columns AS colfk
+            WHERE colfk.parent_column_id = clmns.column_id
+            AND colfk.parent_object_id = clmns.object_id
+            ), 0) AS BIT) AS [IsForeignKey], CAST(clmns.is_sparse AS BIT) AS [IsSparse], CAST(clmns.is_column_set AS BIT) AS [IsColumnSet], usrt.name AS [DataType]
+        FROM sys.tables AS tbl
+            INNER JOIN sys.all_columns AS clmns
+        ON clmns.object_id = tbl.object_id
+            LEFT OUTER JOIN sys.computed_columns AS cc ON cc.object_id = clmns.object_id
+            AND cc.column_id = clmns.column_id
+            LEFT OUTER JOIN sys.types AS baset ON ( baset.user_type_id = clmns.system_type_id
+            AND baset.user_type_id = baset.system_type_id
+            )
+            OR ( ( baset.system_type_id = clmns.system_type_id )
+            AND ( baset.user_type_id = clmns.user_type_id )
+            AND ( baset.is_user_defined = 0 )
+            AND ( baset.is_assembly_type = 1 )
+            )
+            LEFT OUTER JOIN sys.types AS usrt ON usrt.user_type_id = clmns.user_type_id
+            LEFT OUTER JOIN sys.schemas AS s1clmns ON s1clmns.schema_id = usrt.schema_id
+            LEFT OUTER JOIN sys.identity_columns AS ic ON ic.object_id = clmns.object_id
+            AND ic.column_id = clmns.column_id
+            LEFT OUTER JOIN sys.objects AS d ON d.object_id = clmns.default_object_id
+            LEFT OUTER JOIN sys.objects AS r ON r.object_id = clmns.rule_object_id
+            LEFT OUTER JOIN sys.xml_schema_collections AS xscclmns ON xscclmns.xml_collection_id = clmns.xml_collection_id
+            LEFT OUTER JOIN sys.schemas AS s2clmns ON s2clmns.schema_id = xscclmns.schema_id
+        WHERE ( tbl.name = #{tableName}
+          AND SCHEMA_NAME(tbl.schema_id) = 'dbo'
+            )
+        ORDER BY [Database_Name] ASC,
+            [Table_Schema] ASC,
+            [Table_Name] ASC,
+            [ID] ASC
+    </select>
+
+
+    <select id="getClustered" resultType="java.util.Map">
+        SELECT idx.name,
+               idx.is_padded,
+               idx.ignore_dup_key,
+               idx.allow_row_locks,
+               idx.allow_page_locks,
+               idx.fill_factor,
+               col.name AS column_name
+        FROM sys.indexes idx
+                 JOIN sys.index_columns ic ON idx.object_id = ic.object_id AND idx.index_id = ic.index_id
+                 JOIN sys.columns col ON ic.object_id = col.object_id AND ic.column_id = col.column_id
+        WHERE idx.type_desc = 'CLUSTERED'
+          AND OBJECT_NAME(idx.object_id) = #{tableName}
+    </select>
+
+
+    <select id="getNonClustered" resultType="java.util.Map">
+        SELECT idx.name,
+               idx.is_padded,
+               idx.ignore_dup_key,
+               idx.allow_row_locks,
+               idx.allow_page_locks,
+               idx.fill_factor
+        FROM sys.indexes idx
+        WHERE idx.type_desc = 'NONCLUSTERED'
+          AND OBJECT_NAME(idx.object_id) = #{tableName}
+    </select>
+
+
+    <select id="getNonClusteredColumnName" resultType="java.util.Map">
+        SELECT ic.*,
+               col.name AS column_name
+        FROM sys.indexes idx
+                 JOIN sys.index_columns ic ON idx.object_id = ic.object_id AND idx.index_id = ic.index_id
+                 JOIN sys.columns col ON idx.object_id = col.object_id AND ic.column_id = col.column_id
+        WHERE idx.type_desc = 'NONCLUSTERED'
+          AND OBJECT_NAME(idx.object_id) = #{tableName}
+          AND idx.name = #{indexName}
+        ORDER BY ic.index_column_id
+    </select>
+
+
+    <select id="isIncludedColumn" resultType="java.lang.Integer">
+        SELECT count(1)
+        FROM sys.indexes idx
+                 JOIN sys.index_columns ic ON idx.object_id = ic.object_id AND idx.index_id = ic.index_id
+                 JOIN sys.columns col ON idx.object_id = col.object_id AND ic.column_id = col.column_id
+        WHERE idx.type_desc = 'NONCLUSTERED'
+          AND OBJECT_NAME(idx.object_id) = #{tableName}
+          AND idx.name = #{indexName}
+          AND ic.is_included_column = 1
+    </select>
+    <select id="getNonClusteredIncludedColumn" resultType="java.util.Map">
+        SELECT ic.*,
+               col.name AS column_name
+        FROM sys.indexes idx
+                 JOIN sys.index_columns ic ON idx.object_id = ic.object_id AND idx.index_id = ic.index_id
+                 JOIN sys.columns col ON idx.object_id = col.object_id AND ic.column_id = col.column_id
+        WHERE idx.type_desc = 'NONCLUSTERED'
+          AND OBJECT_NAME(idx.object_id) = #{tableName}
+          AND idx.name = #{indexName}
+          AND ic.is_included_column = 1
+        ORDER BY ic.index_column_id
+    </select>
+    <select id="getNonClusteredNotIncludedColumn" resultType="java.util.Map">
+        SELECT ic.*,
+               col.name AS column_name
+        FROM sys.indexes idx
+                 JOIN sys.index_columns ic ON idx.object_id = ic.object_id AND idx.index_id = ic.index_id
+                 JOIN sys.columns col ON idx.object_id = col.object_id AND ic.column_id = col.column_id
+        WHERE idx.type_desc = 'NONCLUSTERED'
+          AND OBJECT_NAME(idx.object_id) = #{tableName}
+          AND idx.name = #{indexName}
+          AND ic.is_included_column = 0
+        ORDER BY ic.index_column_id
+    </select>
+    <select id="getHasDefaultColumn" resultType="java.util.Map">
+        SELECT CAST(
+                       serverproperty(N'Servername')
+                   AS sysname) AS [Server_Name], db_name() AS [Database_Name], SCHEMA_NAME(tbl.schema_id) AS [Table_Schema], tbl.name AS [Table_Name], clmns.column_id AS [Column_ID], clmns.name AS [Column_Name], cstr.name AS [Name], CAST(cstr.is_system_named AS bit) AS [IsSystemNamed], CAST(CASE WHEN filetableobj.object_id IS NULL THEN 0 ELSE 1 END AS bit) AS [IsFileTableDefined], cstr.definition AS [Text]
+        FROM
+            sys.tables AS tbl
+            INNER JOIN sys.all_columns AS clmns
+        ON clmns.object_id=tbl.object_id
+            INNER JOIN sys.default_constraints AS cstr ON cstr.object_id=clmns.default_object_id
+            LEFT OUTER JOIN sys.filetable_system_defined_objects AS filetableobj ON filetableobj.object_id = cstr.object_id
+        WHERE
+            (tbl.name=#{tableName}
+          and SCHEMA_NAME(tbl.schema_id)='dbo')
+        ORDER BY
+            [Database_Name] ASC, [Table_Schema] ASC, [Table_Name] ASC, [Column_ID] ASC, [Name] ASC
+    </select>
+</mapper>

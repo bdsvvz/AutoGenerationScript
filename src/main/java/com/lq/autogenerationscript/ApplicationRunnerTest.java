@@ -23,7 +23,8 @@ public class ApplicationRunnerTest implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments applicationArguments) throws Exception {
-        String jarPath = System.getProperty("java.class.path");
+//        String jarPath = System.getProperty("java.class.path");
+        String jarPath = new File("src/main/resources/").getAbsolutePath();
         //实际文件目录
         String tableFilePath = jarPath.substring(0, jarPath.lastIndexOf("\\") + 1) + "script\\table\\";
         File f = new File(tableFilePath);

@@ -60,10 +60,10 @@ public class MergerFileUtils {
 
     public static void main(String[] args) throws IOException {
 //定义输出目录
-        String FileOut = "C:\\Users\\LQ\\Desktop\\merge_fyey.sql";
+        String FileOut = "F:\\Android\\mhis6-script\\sqlserver\\相同脚本\\merge_sqlserver.sql";
         BufferedWriter bw = new BufferedWriter(new FileWriter(FileOut));
 //读取目录下的每个文件或者文件夹，并读取文件的内容写到目标文字中去
-        File[] list = new File("F:\\Android\\移动医护脚本整理\\移动医护脚本\\不同存储过程脚本\\阜阳二院").listFiles();
+        File[] list = new File("F:\\Android\\mhis6-script\\sqlserver\\相同脚本\\存储过程").listFiles();
         List<String> strs = new ArrayList<>();
         for (File f : list) {
             strs.add(f.getPath());
