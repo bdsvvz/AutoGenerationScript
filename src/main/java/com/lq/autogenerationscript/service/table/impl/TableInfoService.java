@@ -5,6 +5,7 @@ import com.lq.autogenerationscript.service.table.ITableInfoService;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -19,6 +20,7 @@ import java.util.Map;
  * @Version 1.0
  */
 @Service
+@Slf4j
 public class TableInfoService implements ITableInfoService {
 
     @Resource
@@ -31,7 +33,7 @@ public class TableInfoService implements ITableInfoService {
      * @param tableName 表名
      */
     @Override
-    public void createTableInfo(String tableName) throws IOException, TemplateException {
+    public void createTableInfo(String tableName) throws IOException {
         //创建Configuration对象
         Configuration configuration = new Configuration();
         //设置模板所在目录
@@ -57,12 +59,20 @@ public class TableInfoService implements ITableInfoService {
             e.put("list2", nonClusteredNotIncludedColumnInfo);
         });
         List<Map> defaultColumnList = tableMapper.getHasDefaultColumn(tableName);
-        System.out.println(nonClusteredList);
         map.put("tableColumnInfo", tableColumnInfo);
         map.put("primaryKeyInfo", primaryKeyInfo);
         map.put("nonClusteredList", nonClusteredList);
         map.put("defaultColumnList", defaultColumnList);
-        Writer writer = new OutputStreamWriter(new FileOutputStream("E:\\java-project\\AutoGenerationScript\\src\\main\\script\\table\\test.sql"));
-        template.process(map, writer);
+        Writer writer = null;
+        try {
+            writer = new OutputStreamWriter(new FileOutputStream("E:\\java-project\\AutoGenerationScript\\src\\main\\script\\table\\test.sql"));
+            template.process(map, writer);
+        } catch (TemplateException e) {
+            log.error(e.getMessage());
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
+        }
     }
 }

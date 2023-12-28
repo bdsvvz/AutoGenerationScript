@@ -1,5 +1,5 @@
 <#--建表结构模板-->
-/****** Object:  Table [dbo].[${table_name}]    Script Date: 2023-12-28 09:57:42 ******/
+/****** Object:  Table [dbo].[${table_name}]    Script Date: ${.now?string("yyyy-MM-dd HH:mm:ss")} ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -25,7 +25,7 @@ GO
 
 <#--可重复建表字段模板-->
 <#list tableColumnInfo as map>
-/****** Object:  Column [${map['name']}]    Script Date: 2023-12-28 09:57:42 ******/
+/****** Object:  Column [${map['name']}]    Script Date: ${.now?string("yyyy-MM-dd HH:mm:ss")} ******/
 IF COL_LENGTH('${table_name}', '${map['name']}') IS NULL
 BEGIN
     ALTER TABLE [${table_name}] ADD [${map['name']}] [${map['datatype']}]<#if map['datatype'] == "varchar" || map['datatype'] == "nvarchar">(${map['length']})<#elseif map['datatype'] == "numeric">(${map['numericprecision']},${map['numericscale']})<#else></#if>  ${map['nullable']?string('NULL','NOT NULL')};
@@ -36,7 +36,7 @@ END
 
 <#--建表索引模板-->
 <#list nonClusteredList as item>
-/****** Object:  Index [${item['name']}]    Script Date: 2023-12-28 09:57:42 ******/
+/****** Object:  Index [${item['name']}]    Script Date: ${.now?string("yyyy-MM-dd HH:mm:ss")} ******/
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[${table_name}]') AND name = N'${item['name']}')
 CREATE NONCLUSTERED INDEX [${item['name']}] ON [dbo].[${table_name}]
 (
