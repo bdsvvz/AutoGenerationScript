@@ -40,6 +40,7 @@ public class TableInfoService implements ITableInfoService {
         configuration.setDirectoryForTemplateLoading(new File("E:\\java-project\\AutoGenerationScript\\src\\main\\resources\\templates"));
         //获取模板
         Template template = configuration.getTemplate("createTable.ftl");
+//        Template template = configuration.getTemplate("createIndex.ftl");
         //设置数据并执行
         Map map = new HashMap();
         map.put("table_name", "mhis_biz_infusion");
