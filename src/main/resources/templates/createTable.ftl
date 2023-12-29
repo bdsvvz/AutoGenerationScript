@@ -1,3 +1,9 @@
+<#macro greet umap>
+<#if umap['datatype'] == "varchar" || umap['datatype'] == "nvarchar" || umap['datatype'] == "nvarchar" || umap['datatype'] == "varbinary" || umap['datatype'] == "binary" ||  umap['datatype'] == "nchar" ||  umap['datatype'] == "char"><#if umap['length'] gt 0>(${umap['length']})<#else>('max')</#if><#elseif umap['datatype'] == "datetime2">(${umap['numericscale']})<#elseif umap['datatype'] == "numeric">(${umap['numericprecision']},${umap['numericscale']})<#else></#if>
+</#macro>
+
+
+
 <#--建表结构模板-->
 /****** Object:  Table [dbo].[${table_name}]    Script Date: ${.now?string("yyyy-MM-dd HH:mm:ss")} ******/
 SET ANSI_NULLS ON
@@ -10,7 +16,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[${
 BEGIN
 CREATE TABLE [dbo].[${table_name}](
 <#list tableColumnInfo as map>
-    [${map['name']}] [${map['datatype']}]<#if map['datatype'] == "varchar" || map['datatype'] == "nvarchar">(${map['length']})<#elseif map['datatype'] == "numeric">(${map['numericprecision']},${map['numericscale']})<#else></#if>  ${map['nullable']?string('NULL,','NOT NULL,')}
+    [${map['name']}] [${map['datatype']}]<#compress><@greet umap=map/></#compress> ${map['nullable']?string(' NULL',' NOT NULL')},
 </#list>
 CONSTRAINT [${primaryKeyInfo['name']}] PRIMARY KEY CLUSTERED
 (
@@ -28,7 +34,7 @@ GO
 /****** Object:  Column [${map['name']}]    Script Date: ${.now?string("yyyy-MM-dd HH:mm:ss")} ******/
 IF COL_LENGTH('${table_name}', '${map['name']}') IS NULL
 BEGIN
-    ALTER TABLE [${table_name}] ADD [${map['name']}] [${map['datatype']}]<#if map['datatype'] == "varchar" || map['datatype'] == "nvarchar">(${map['length']})<#elseif map['datatype'] == "numeric">(${map['numericprecision']},${map['numericscale']})<#else></#if>  ${map['nullable']?string('NULL','NOT NULL')};
+    ALTER TABLE [${table_name}] ADD [${map['name']}] [${map['datatype']}]<#compress><@greet umap=map/></#compress> ${map['nullable']?string(' NULL',' NOT NULL')};
 END
 </#list>
 
