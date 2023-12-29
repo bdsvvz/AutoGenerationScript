@@ -154,4 +154,28 @@
         ORDER BY
             [Database_Name] ASC, [Table_Schema] ASC, [Table_Name] ASC, [Column_ID] ASC, [Name] ASC
     </select>
+
+    <select id="getCreateTableScript" resultType="java.lang.String">
+        select dbms_metadata.get_ddl('TABLE',#{tableName}) from dual
+    </select>
+
+    <select id="getOracleTableColumnInfo" resultType="java.util.Map">
+        SELECT x.column_name,
+               x.data_type,
+               x.data_length,
+               x.DATA_PRECISION,
+               x.DATA_SCALE,
+               x.NULLABLE,
+               x.DATA_DEFAULT
+        FROM user_tab_columns x
+        WHERE x.table_name = #{tableName}
+        order by x.column_id asc
+    </select>
+    <select id="getOracleTableIndexInfo" resultType="java.util.Map">
+        SELECT x.*, y.uniqueness
+        FROM user_ind_columns x
+                 join
+             user_indexes y on x.index_name = y.index_name
+        WHERE x.table_name = #{tableName}
+    </select>
 </mapper>

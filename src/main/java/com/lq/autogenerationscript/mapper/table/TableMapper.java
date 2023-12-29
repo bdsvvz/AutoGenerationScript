@@ -27,4 +27,10 @@ public interface TableMapper {
     List<Map> getNonClusteredNotIncludedColumn(String tableName, String indexName);
 
     List<Map> getHasDefaultColumn(String tableName);
+
+    String getCreateTableScript(String tableName);
+
+    List<Map> getOracleTableColumnInfo(String tableName);
+
+    List<Map> getOracleTableIndexInfo(String upperCase);
 }
