@@ -1,5 +1,5 @@
 <#macro greet umap>
-<#if umap['datatype'] == "varchar" || umap['datatype'] == "nvarchar" || umap['datatype'] == "nvarchar" || umap['datatype'] == "varbinary" || umap['datatype'] == "binary" ||  umap['datatype'] == "nchar" ||  umap['datatype'] == "char"><#if umap['length'] gt 0>(${umap['length']})<#else>('max')</#if><#elseif umap['datatype'] == "datetime2">(${umap['numericscale']})<#elseif umap['datatype'] == "numeric">(${umap['numericprecision']},${umap['numericscale']})<#else></#if>
+<#if umap['datatype'] == "varchar" || umap['datatype'] == "nvarchar" || umap['datatype'] == "nvarchar" || umap['datatype'] == "varbinary" || umap['datatype'] == "binary" ||  umap['datatype'] == "nchar" ||  umap['datatype'] == "char"><#if umap['length'] gt 0>(${umap['length']?string["###0"]})<#else>(max)</#if><#elseif umap['datatype'] == "datetime2">(${umap['numericscale']})<#elseif umap['datatype'] == "numeric">(${umap['numericprecision']},${umap['numericscale']})<#else></#if>
 </#macro>
 
 
@@ -16,8 +16,13 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[${
 BEGIN
 CREATE TABLE [dbo].[${table_name}](
 <#list tableColumnInfo as map>
-    [${map['name']}] [${map['datatype']}]<#compress><@greet umap=map/></#compress> ${map['nullable']?string(' NULL',' NOT NULL')},
+    <#if (map?is_last && primaryKeyColumnList?size <=0) >
+        [${map['name']}] [${map['datatype']}]<#compress><@greet umap=map/></#compress> ${map['nullable']?string(' NULL',' NOT NULL')}
+    <#else>
+        [${map['name']}] [${map['datatype']}]<#compress><@greet umap=map/></#compress> ${map['nullable']?string(' NULL',' NOT NULL')},
+    </#if>
 </#list>
+<#if primaryKeyColumnList?size gt 0>
 CONSTRAINT [${primaryKeyInfo['name']}] PRIMARY KEY CLUSTERED
 (
 <#list primaryKeyColumnList as primaryMap>
@@ -27,7 +32,9 @@ CONSTRAINT [${primaryKeyInfo['name']}] PRIMARY KEY CLUSTERED
         [${primaryMap['name']}] ${primaryMap['is_descending_key']?string('DESC,','ASC,')}
     </#if>
 </#list>
-)WITH (PAD_INDEX = ${primaryKeyInfo['is_padded']?string('ON','OFF')}, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = ${primaryKeyInfo['ignore_dup_key']?string('ON','OFF')}, ALLOW_ROW_LOCKS = ${primaryKeyInfo['allow_row_locks']?string('ON','OFF')}, ALLOW_PAGE_LOCKS = ${primaryKeyInfo['allow_page_locks']?string('ON','OFF')},FILLFACTOR = ${primaryKeyInfo['fill_factor']}) ON [PRIMARY]
+)WITH (PAD_INDEX = ${primaryKeyInfo['is_padded']?string('ON','OFF')}, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = ${primaryKeyInfo['ignore_dup_key']?string('ON','OFF')}, ALLOW_ROW_LOCKS = ${primaryKeyInfo['allow_row_locks']?string('ON','OFF')}, ALLOW_PAGE_LOCKS = ${primaryKeyInfo['allow_page_locks']?string('ON','OFF')}<#if primaryKeyInfo['fill_factor'] gt 0>,FILLFACTOR = ${primaryKeyInfo['fill_factor']}</#if>) ON [PRIMARY]
+<#else>
+</#if>
 ) ON [PRIMARY]
 END
 GO

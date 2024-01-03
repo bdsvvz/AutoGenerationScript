@@ -2,7 +2,6 @@ package com.lq.autogenerationscript.controller;
 
 import com.lq.autogenerationscript.service.ITableService;
 import com.lq.autogenerationscript.service.table.ITableInfoService;
-import com.lq.autogenerationscript.service.table.impl.TableInfoService;
 import freemarker.template.TemplateException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

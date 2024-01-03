@@ -4,8 +4,6 @@
 <mapper namespace="com.lq.autogenerationscript.mapper.table.TableMapper">
 
 
-
-
     <select id="getTableColumnInfo" resultType="java.util.Map">
         SELECT CAST(SERVERPROPERTY(N'Servername') AS sysname) AS [Server_Name], DB_NAME() AS [Database_Name], SCHEMA_NAME(tbl.schema_id) AS [Table_Schema], tbl.name AS [Table_Name], clmns.column_id AS [ID], clmns.name AS [Name], clmns.is_ansi_padded AS [AnsiPaddingStatus], clmns.is_computed AS [Computed], ISNULL(cc.definition, N'') AS [ComputedText], ISNULL(baset.name, N'') AS [SystemType], s1clmns.name AS [DataTypeSchema], CAST(clmns.is_rowguidcol AS BIT) AS [RowGuidCol], CAST(CASE WHEN baset.name IN ( N'nchar', N'nvarchar' )
             AND clmns.max_length
@@ -68,15 +66,21 @@
                idx.ignore_dup_key,
                idx.allow_row_locks,
                idx.allow_page_locks,
-               idx.fill_factor,
-               col.name AS column_name
+               idx.fill_factor
+        FROM sys.indexes idx
+        WHERE idx.type_desc = 'CLUSTERED'
+          AND OBJECT_NAME(idx.object_id) = #{tableName}
+    </select>
+
+    <select id="getClusteredColumn" resultType="java.util.Map">
+        SELECT ic.is_descending_key,
+               col.name
         FROM sys.indexes idx
                  JOIN sys.index_columns ic ON idx.object_id = ic.object_id AND idx.index_id = ic.index_id
                  JOIN sys.columns col ON ic.object_id = col.object_id AND ic.column_id = col.column_id
         WHERE idx.type_desc = 'CLUSTERED'
           AND OBJECT_NAME(idx.object_id) = #{tableName}
     </select>
-
 
     <select id="getNonClustered" resultType="java.util.Map">
         SELECT idx.name,
@@ -156,21 +160,17 @@
     </select>
 
     <select id="getCreateTableScript" resultType="java.lang.String">
-        select dbms_metadata.get_ddl('TABLE',#{tableName}) from dual
+        select dbms_metadata.get_sxml_ddl('TABLE', #{tableName})
+        from dual
     </select>
 
-    <select id="getOracleTableColumnInfo" resultType="java.util.Map">
-        SELECT x.column_name,
-               x.data_type,
-               x.data_length,
-               x.DATA_PRECISION,
-               x.DATA_SCALE,
-               x.NULLABLE,
-               x.DATA_DEFAULT
+    <select id="getOracleTableColumnDefaultValue" resultMap="ResultMapWithBLOBs">
+        SELECT x.data_default
         FROM user_tab_columns x
         WHERE x.table_name = #{tableName}
-        order by x.column_id asc
+        and x.column_name = #{columnName}
     </select>
+
     <select id="getOracleTableIndexInfo" resultType="java.util.Map">
         SELECT x.*, y.uniqueness
         FROM user_ind_columns x
@@ -178,4 +178,34 @@
              user_indexes y on x.index_name = y.index_name
         WHERE x.table_name = #{tableName}
     </select>
+
+    <select id="getMssqlTableList" resultType="java.lang.String">
+        <bind name="pattern" value="prefix + '%'"/>
+        SELECT name
+        FROM sys.tables
+        WHERE name LIKE #{pattern}
+    </select>
+
+    <select id="getOracleTableList" resultType="java.lang.String">
+        <bind name="pattern" value="_parameter.toUpperCase() + '%'"/>
+        SELECT table_name
+        FROM user_tables WHERE table_name LIKE #{pattern}
+    </select>
+
+    <select id="getOracleTableColumnInfo" resultType="java.util.Map">
+        SELECT x.column_name,
+               x.data_type,
+               x.data_length,
+               x.data_precision,
+               x.data_scale,
+               x.nullable
+        FROM user_tab_columns x
+        WHERE x.table_name = #{tableName}
+        order by x.column_id asc
+    </select>
+
+    <resultMap id="ResultMapWithBLOBs" type="com.lq.autogenerationscript.entity.OracleTableColumnDefaultValue">
+        <result column="data_default" property="data_default" jdbcType="LONGVARBINARY"/>
+    </resultMap>
+
 </mapper>

@@ -1,7 +1,8 @@
 package com.lq.autogenerationscript.mapper.table;
 
-import org.apache.ibatis.annotations.MapKey;
+import com.lq.autogenerationscript.entity.OracleTableColumnDefaultValue;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -33,4 +34,24 @@ public interface TableMapper {
     List<Map> getOracleTableColumnInfo(String tableName);
 
     List<Map> getOracleTableIndexInfo(String upperCase);
+
+    /**
+     * 获取sqlserver 表集合
+     *
+     * @param prefix 表名前缀
+     * @return
+     */
+    List<String> getMssqlTableList(@Param("prefix") String prefix);
+
+    /**
+     * 获取oracle 表集合
+     *
+     * @param prefix 表名前缀
+     * @return
+     */
+    List<String> getOracleTableList(String prefix);
+
+    List<Map> getClusteredColumn(String tableName);
+
+    OracleTableColumnDefaultValue getOracleTableColumnDefaultValue(String tableName, String columnName);
 }
