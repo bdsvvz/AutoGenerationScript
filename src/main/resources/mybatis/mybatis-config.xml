@@ -3,7 +3,7 @@
 <configuration>
     <settings>
         <setting name="logImpl" value="STDOUT_LOGGING" />
+        <setting name="callSettersOnNulls" value="true" />
     </settings>
     <objectWrapperFactory type="com.lq.autogenerationscript.objectwrapperfactory.MapWrapperFactory"/>
-
 </configuration>

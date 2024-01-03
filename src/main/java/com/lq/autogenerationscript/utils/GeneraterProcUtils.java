@@ -108,6 +108,7 @@ public class GeneraterProcUtils {
         stringBuffer.append(procContent);
         stringBuffer.append("\r\n");
         stringBuffer.append("/");
+        stringBuffer.append("\r\n");
         path = path + procName + ".sql";
         //新建文件
         File f = new File(path);
