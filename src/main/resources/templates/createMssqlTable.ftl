@@ -20,7 +20,13 @@ CREATE TABLE [dbo].[${table_name}](
 </#list>
 CONSTRAINT [${primaryKeyInfo['name']}] PRIMARY KEY CLUSTERED
 (
-    [${primaryKeyInfo['column_name']}] ASC
+<#list primaryKeyColumnList as primaryMap>
+    <#if primaryMap?is_last>
+        [${primaryMap['name']}] ${primaryMap['is_descending_key']?string('DESC','ASC')}
+    <#else>
+        [${primaryMap['name']}] ${primaryMap['is_descending_key']?string('DESC,','ASC,')}
+    </#if>
+</#list>
 )WITH (PAD_INDEX = ${primaryKeyInfo['is_padded']?string('ON','OFF')}, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = ${primaryKeyInfo['ignore_dup_key']?string('ON','OFF')}, ALLOW_ROW_LOCKS = ${primaryKeyInfo['allow_row_locks']?string('ON','OFF')}, ALLOW_PAGE_LOCKS = ${primaryKeyInfo['allow_page_locks']?string('ON','OFF')},FILLFACTOR = ${primaryKeyInfo['fill_factor']}) ON [PRIMARY]
 ) ON [PRIMARY]
 END

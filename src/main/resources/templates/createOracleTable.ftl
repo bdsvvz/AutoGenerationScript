@@ -30,7 +30,7 @@ END;
 
 
 <#list tableColumnInfo as map>
-/****** Object:  Table [dbo].[${table_name?upper_case}]    Script Date: ${.now?string("yyyy-MM-dd HH:mm:ss")} ******/
+/****** Object:  Colummn [${map['column_name']?upper_case}]    Script Date: ${.now?string("yyyy-MM-dd HH:mm:ss")} ******/
 DECLARE FLAG_NUM NUMBER;
 BEGIN
 SELECT
